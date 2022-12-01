@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 }
 
 type result struct {
@@ -120,6 +119,7 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 
 				select {
 				case <-ctx.Done():
+					// finish goroutine
 					return
 
 				default:
@@ -131,16 +131,18 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 						*rowsBatch = []string{}
 					}
 
+					// if nothing else to scan return
+					if !scanned {
+						return
+					}
+
 					*rowsBatch = append(*rowsBatch, row)
 				}
 
-				// if nothing else to scan return
-				if !scanned {
-					return
-				}
 			}
 		}()
 
+		// out is a channel and a pointer
 		return out
 	}
 
@@ -173,25 +175,25 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 
 	// combiner takes in multiples read-only channels that receive processed output
 	// (from workers) and sends it out on its own channel via multiplexer
-	combiner := func(ctx context.Context, inputs ...<-chan processed) <-chan processed {
+	combiner := func(ctx context.Context, inputs []<-chan processed) <-chan processed {
 		out := make(chan processed)
 
 		var wg sync.WaitGroup
 		multiplexer := func(p <-chan processed) {
 			defer wg.Done()
 
-			for in := range p {
+			for input := range p {
 				select {
 				case <-ctx.Done():
-				case out <- in:
+				case out <- input:
 				}
 			}
 		}
 
 		// add length of input channels to be consumed by multiplexer
 		wg.Add(len(inputs))
-		for _, in := range inputs {
-			go multiplexer(in)
+		for _, input := range inputs {
+			go multiplexer(input)
 		}
 
 		// close channel after all inputs channels are closed
@@ -207,7 +209,6 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 	// goroutines exit leaving leaks.
 	// particularly, if this function becomes part of a program with a longer
 	// lifetime that this function
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -216,18 +217,18 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 	rowsCh := reader(ctx, &rowsBatch)
 
 	// STAGE 2: create a slice of processed output channels with size of numWorkers
-	// ad assign each slot with the out channel from each worker
-	workerChn := make([]<-chan processed, numWorkers)
+	// add assign each slot with the out channel from each worker
+	workerCh := make([]<-chan processed, numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		workerChn[i] = worker(ctx, rowsCh)
+		workerCh[i] = worker(ctx, rowsCh)
 	}
 
 	firstNameCount := map[string]int{}
 	fullNameCount := map[string]bool{}
 
-	// STAGE 3: read from the combined cnannel and calculate the filna result 
+	// STAGE 3: read from the combined cnannel and calculate the final result
 	// this will end once all channels from workers are closed
-	for processed := range combiner(ctx, workerChn...) {
+	for processed := range combiner(ctx, workerCh) {
 		res.numRows += processed.numRows
 
 		// add months processed by worker
