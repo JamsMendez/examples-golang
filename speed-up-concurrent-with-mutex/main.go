@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -12,6 +11,7 @@ var a, b float64
 
 func main() {
 	fmt.Println("Mutex", "\t", "RWMutex")
+
 	for i := 0; i < 10; i++ {
 		done()
 		time.Sleep(2 * time.Second)
@@ -86,7 +86,7 @@ func done() {
 	wg2.Wait()
 
 	diff2 := time.Since(now2)
-	log.Println(diff1, "\t", diff2)
+	fmt.Println(diff1, "\t", diff2)
 
 	a = a + float64(diff1)
 	b = b + float64(diff2)

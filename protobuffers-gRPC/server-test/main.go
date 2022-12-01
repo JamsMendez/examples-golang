@@ -23,7 +23,7 @@ func main() {
 	repository, err := database.NewPostgresRepository(urlConn)
 	if err != nil {
 		log.Fatal("ServerTest.NewPostgresRepository: ", err)
-	}	
+	}
 
 	serverTest := server.NewTestServer(repository)
 
