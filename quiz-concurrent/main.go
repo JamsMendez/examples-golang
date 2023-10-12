@@ -29,7 +29,7 @@ func main() {
 		done <- true
 	}()
 
-	gameEngine(done, *time.NewTicker(10 * time.Second))
+	gameEngine(done, *time.NewTicker(60 * 5 * time.Second))
 
 	fmt.Printf("Your score is %d!!!\n", score)
 }
