@@ -165,10 +165,10 @@ func findUserByID(userID string, users []*userItem) (*userItem, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("user not found with ID %s\n", userID)
+	return nil, fmt.Errorf("user not found with ID %s", userID)
 }
 
-func sendSmsNotification(user *userItem) {
+func sendSmsNotification(_ *userItem) {
 	time.Sleep(1 * time.Millisecond)
 	// fmt.Printf("Sending sms notification to %s\n", user.Phone)
 }

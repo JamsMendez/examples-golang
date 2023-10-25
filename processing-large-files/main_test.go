@@ -97,16 +97,16 @@ func BenchmarkMain(b *testing.B) {
 	}
 
 	for _, item := range tableBenchmarks {
-	    for _, input := range item.inputs {
-	        numWorkers := input[0]
-	        batchSize := input[1]
+		for _, input := range item.inputs {
+			numWorkers := input[0]
+			batchSize := input[1]
 
-	        bName := fmt.Sprintf("%s %03d workers %04d batchSize", item.name, numWorkers, batchSize)
-	        b.Run(bName, func(b *testing.B) {
-	            for i := 0; i < b.N; i++ {
-	                item.benchFn(item.file, numWorkers, batchSize)
-	            }
-	        })
-	    }
+			bName := fmt.Sprintf("%s %03d workers %04d batchSize", item.name, numWorkers, batchSize)
+			b.Run(bName, func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					item.benchFn(item.file, numWorkers, batchSize)
+				}
+			})
+		}
 	}
 }

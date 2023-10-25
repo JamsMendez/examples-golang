@@ -1,6 +1,8 @@
 package main
 
 func main() {
-	// runCacheRedisDatabase()
+	runCacheRedisSentinel()
+	runCacheRedisCluster()
+	runCacheRedisDatabase()
 	runCacheRedis()
 }

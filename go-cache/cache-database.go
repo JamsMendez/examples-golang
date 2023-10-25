@@ -17,7 +17,7 @@ type User struct {
 
 func runCacheRedisDatabase() {
 	var sql sql.DB
-	getUsers(context.Background(), &sql)
+	_, _ = getUsers(context.Background(), &sql)
 }
 
 func NewRedisClient(ctx context.Context) *redis.Client {
@@ -41,7 +41,9 @@ func getUsers(ctx context.Context, db *sql.DB) ([]User, error) {
 		// If the data is not available in the Redis cache, query the database
 		rows, err := db.QueryContext(ctx, "SELECT * FROM users")
 		if err != nil {
+			return nil, err
 		}
+
 		defer rows.Close()
 
 		// Loop through the rows and store the user data in a slice
@@ -52,6 +54,7 @@ func getUsers(ctx context.Context, db *sql.DB) ([]User, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			users = append(users, user)
 		}
 
@@ -76,7 +79,7 @@ func getUsers(ctx context.Context, db *sql.DB) ([]User, error) {
 	var users []User
 	err = json.Unmarshal([]byte(val), &users)
 	if err != nil {
-
+		return nil, err
 	}
 
 	return users, nil

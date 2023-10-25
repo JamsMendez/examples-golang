@@ -149,7 +149,7 @@ func concurrent(fileName string, numWorkers, batchSize int) (res result) {
 	// worker takes in a read-only channel to recieve batches of rows
 	// after it processes each row-batch it sends out the processed output
 	// on its channel
-	worker := func(ctx context.Context, rowBatch <-chan []string) <-chan processed {
+	worker := func(_ context.Context, rowBatch <-chan []string) <-chan processed {
 		out := make(chan processed)
 
 		go func() {
