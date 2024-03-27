@@ -1,0 +1,11 @@
+version: '2'
+sql:
+  - engine: 'postgresql'
+    queries: 'db/queries'
+    schema: 'db/schema'
+    gen:
+      go:
+        package: 'postgres'
+        out: 'persistence/postgres'
+        sql_package: 'database/sql'
+        emit_result_struct_pointers: true
