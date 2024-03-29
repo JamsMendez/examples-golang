@@ -1,8 +1,10 @@
 package square
 
 import (
+	"fmt"
 	"math"
 	"sync"
+	"time"
 )
 
 func publishData(numbers []int) <-chan int {
@@ -12,6 +14,8 @@ func publishData(numbers []int) <-chan int {
 
 		for _, number := range numbers {
 			workerCh <- number
+			fmt.Println("Published number", number)
+			<-time.After(1 * time.Second)
 		}
 	}()
 
@@ -37,6 +41,7 @@ func ProcessDataWorker(numbers []int, workerCount int) []Data {
 			defer wg.Done()
 
 			for number := range workerCh {
+				fmt.Println("Consumed number", number)
 				d := Data{
 					Number: number,
 					Square: math.Pow(float64(number), 2.0),
@@ -50,9 +55,11 @@ func ProcessDataWorker(numbers []int, workerCount int) []Data {
 	go func() {
 		wg.Wait()
 		close(outputCh)
+		fmt.Println("Closed output channel")
 	}()
 
 	for d := range outputCh {
+		fmt.Println("Received data", d)
 		output = append(output, d)
 	}
 
@@ -68,7 +75,6 @@ func worker(_ int, job <-chan int, result chan<- Data) {
 
 		result <- d
 	}
-
 }
 
 func ProcessDataWorkerV2(numbers []int, workerCount int) []Data {

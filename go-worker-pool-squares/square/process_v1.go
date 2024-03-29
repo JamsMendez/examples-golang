@@ -6,7 +6,7 @@ import (
 )
 
 func ProcessDataGoroutines(numbers []int) []Data {
-	outputs := make([]Data, len(numbers))
+	outputs := make([]Data, 0)
 	outputCh := make(chan Data)
 
 	var wg sync.WaitGroup
@@ -37,7 +37,7 @@ func ProcessDataGoroutines(numbers []int) []Data {
 }
 
 func ProcessDataGoroutinesV2(numbers []int) []Data {
-	outputs := make([]Data, len(numbers))
+	outputs := make([]Data, 0)
 	outputCh := make(chan Data)
 
 	for _, number := range numbers {
