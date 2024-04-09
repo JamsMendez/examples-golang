@@ -52,6 +52,9 @@ func (h *handlerEvent) Unsubscribe(clientID string) {
 }
 
 func (h *handlerEvent) Emit(clientID string, msg Message, w io.Writer) {
+	h.Lock()
+	defer h.Unlock()
+
 	client, ok := h.clients[clientID]
 	if !ok {
 		return
