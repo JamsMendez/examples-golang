@@ -1,12 +1,8 @@
-package main
+package square
 
-import (
-	"fmt"
+import "fmt"
 
-	"go-worker-pool-squares/square"
-)
-
-func main() {
+func Run() {
 	numbers := []int{
 		1, 2, 3, 4, 5,
 		6, 7, 8, 9, 10,
@@ -40,7 +36,7 @@ func main() {
 		146, 147, 148, 149, 150,
 	}
 
-	data := square.ProcessDataWorker(numbers, 5)
+	data := ProcessDataWorker(numbers, 5)
 
 	for _, d := range data {
 		fmt.Println(d)

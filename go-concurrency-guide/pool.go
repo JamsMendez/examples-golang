@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func main() { 
+func mainPool() { 
   customPool := &sync.Pool{
     New: func() interface{} {
       now := time.Now().Format("2006-01-02 15:04:05")
