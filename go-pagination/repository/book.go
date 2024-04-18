@@ -5,11 +5,51 @@ import (
 	"database/sql"
 
 	"go-pagination/domain"
+
 	psql "go-pagination/postgresql"
 )
 
 type bookRepo struct {
 	queries *psql.Queries
+}
+
+// FindBookByID implements domain.BookRepository.
+func (br *bookRepo) FindBookByID(ctx context.Context, params domain.FindBookParams) ([]domain.Book, error) {
+	var bb []psql.Book
+	var err error
+
+	if params.Offset <= 0 {
+		limit := int32(params.Limit) + 1
+		bb, err = br.queries.FindLastBooks(ctx, limit)
+
+	} else {
+		findParams := psql.FindBooksByIDParams{
+			ID:    int64(params.Offset),
+			Limit: int32(params.Limit) + 1,
+		}
+
+		bb, err = br.queries.FindBooksByID(ctx, findParams)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var books []domain.Book
+
+	for _, b := range bb {
+		book := domain.Book{
+			ID:        b.ID,
+			Title:     b.Title,
+			Author:    b.Author,
+			CreatedAt: b.CreatedAt,
+			UpdatedAt: b.UpdatedAt,
+		}
+
+		books = append(books, book)
+	}
+
+	return books, nil
 }
 
 func (br bookRepo) Count(ctx context.Context) (int, error) {

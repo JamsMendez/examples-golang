@@ -15,28 +15,19 @@ La paginación por desplazamiento aprovecha los comandos 'OFFSET' y 'LIMIT' en S
   resultados sean duplicados.
 - Ineficiencia en el desplazamiento: No escala bien con conjuntos de datos grandes
 
-[//]: # (### Paginación por Cursor)
+### Paginación por Cursor
 
-[//]: # (La paginación por cursor utiliza un puntero que hace referencia a un registro específico en la base de datos.)
+La paginación por cursor utiliza un puntero que hace referencia a un registro específico en la base de datos.
 
-[//]: # ()
-[//]: # (#### Ventajas)
+#### Ventajas
 
-[//]: # ()
-[//]: # (- Como se obtiene desde un punto de referencia estable, la adición o eliminación de registros no afectará la paginación.)
+- Como se obtiene desde un punto de referencia estable, la adición o eliminación de registros no afectará la paginación.
+- Escalabilidad con conjuntos de datos grandes, porque cursor es único e indexado y la base de datos salta directamente
+  al registro sin iterar a través de los datos no deseados.
 
-[//]: # (- Escalabilidad con conjuntos de datos grandes, porque cursor es único e indexado y la base de datos salta directamente)
+#### Contras
 
-[//]: # (  al registro sin iterar a través de los datos no deseados.)
-
-[//]: # ()
-[//]: # (#### Contras)
-
-[//]: # ()
-[//]: # (- La paginación por cursor no permite a los clientes saltar a una página específica.)
-
-[//]: # (- El cursor debe provenir de una columna única y secuencial &#40;id, timestamp, etc&#41;, de lo contrario, algunos datos serán)
-
-[//]: # (  omitidos.)
-
-[//]: # (- Su clasificación limitadas. Si el requisito es ordenar basado en una columna no única, será difícil de implementar usando la paginación por cursor. La concatenación de múltiples columnas para obtener una clave única conduce a una complejidad temporal más lenta.)
+- La paginación por cursor no permite a los clientes saltar a una página específica.
+- El cursor debe provenir de una columna única y secuencial (id, timestamp, etc), de lo contrario, algunos datos
+  pueden ser omitidos.
+- Su clasificación limitadas. Si el requisito es ordenar basado en una columna no única, será difícil de implementar usando la paginación por cursor. La concatenación de múltiples columnas para obtener una clave única conduce a una complejidad temporal más lenta.

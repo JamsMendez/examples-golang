@@ -10,7 +10,7 @@ const (
 	MaxPerPage = 1000
 )
 
-type Pagination[T any] struct {
+type PaginationOffset[T any] struct {
 	Items    []T
 	NextPage *int
 	Page     int
@@ -20,20 +20,20 @@ type Pagination[T any] struct {
 	skip     int
 }
 
-func (p *Pagination[T]) Skip() int {
+func (p *PaginationOffset[T]) Skip() int {
 	return p.skip
 }
 
-func (p *Pagination[T]) Size() int {
+func (p *PaginationOffset[T]) Size() int {
 	return p.size
 }
 
-type PaginationParams struct {
+type PaginationOffsetParams struct {
 	Page    int
 	PerPage int
 }
 
-func NewPagination[T any](page, size, total int) *Pagination[T] {
+func NewPaginationOffset[T any](page, size, total int) *PaginationOffset[T] {
 	var nextPage *int
 
 	pages := total / size
@@ -49,7 +49,7 @@ func NewPagination[T any](page, size, total int) *Pagination[T] {
 
 	skip := size * (page - 1)
 
-	return &Pagination[T]{
+	return &PaginationOffset[T]{
 		skip:     skip,
 		size:     size,
 		NextPage: nextPage,

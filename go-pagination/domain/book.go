@@ -21,6 +21,7 @@ type FindBookParams struct {
 type BookRepository interface {
 	Count(ctx context.Context) (int, error)
 	FindBook(ctx context.Context, params FindBookParams) ([]Book, error)
+	FindBookByID(ctx context.Context, params FindBookParams) ([]Book, error)
 }
 
 type ListBookParams struct {
@@ -29,5 +30,6 @@ type ListBookParams struct {
 }
 
 type BookService interface {
-	List(ctx context.Context, params ListBookParams) (*Pagination[Book], error)
+	List(ctx context.Context, params ListBookParams) (*PaginationOffset[Book], error)
+	ListByID(ctx context.Context, params ListBookParams) (*PaginationCursor[Book], error)
 }

@@ -11,9 +11,9 @@ import (
 
 const countBooks = `-- name: CountBooks :one
 SELECT
-    COUNT(id) AS total
+	COUNT(id) AS total
 FROM
-    books
+	books
 `
 
 func (q *Queries) CountBooks(ctx context.Context) (int64, error) {
@@ -23,21 +23,72 @@ func (q *Queries) CountBooks(ctx context.Context) (int64, error) {
 	return total, err
 }
 
+const findBooksByID = `-- name: FindBooksByID :many
+SELECT
+	id,
+	title,
+	author,
+	created_at,
+	updated_at
+FROM
+	books
+WHERE
+	id <= $1
+ORDER BY
+	id DESC
+LIMIT
+	$2
+`
+
+type FindBooksByIDParams struct {
+	ID    int64
+	Limit int32
+}
+
+func (q *Queries) FindBooksByID(ctx context.Context, arg FindBooksByIDParams) ([]Book, error) {
+	rows, err := q.db.QueryContext(ctx, findBooksByID, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book
+	for rows.Next() {
+		var i Book
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Author,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findBooksByOffset = `-- name: FindBooksByOffset :many
 SELECT
-    id,
-    title,
-    author,
-    created_at,
-    updated_at
+	id,
+	title,
+	author,
+	created_at,
+	updated_at
 FROM
-    books
+	books
 ORDER BY
-    id DESC
-    LIMIT
+	id DESC
+LIMIT
 	$1
 OFFSET
-    $2
+	$2
 `
 
 type FindBooksByOffsetParams struct {
@@ -47,6 +98,50 @@ type FindBooksByOffsetParams struct {
 
 func (q *Queries) FindBooksByOffset(ctx context.Context, arg FindBooksByOffsetParams) ([]Book, error) {
 	rows, err := q.db.QueryContext(ctx, findBooksByOffset, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book
+	for rows.Next() {
+		var i Book
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Author,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findLastBooks = `-- name: FindLastBooks :many
+SELECT
+	id,
+	title,
+	author,
+	created_at,
+	updated_at
+FROM
+	books
+ORDER BY
+	id DESC
+LIMIT
+	$1
+`
+
+func (q *Queries) FindLastBooks(ctx context.Context, limit int32) ([]Book, error) {
+	rows, err := q.db.QueryContext(ctx, findLastBooks, limit)
 	if err != nil {
 		return nil, err
 	}

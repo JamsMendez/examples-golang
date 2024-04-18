@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"go-pagination/domain"
 )
 
@@ -9,14 +10,41 @@ type bookServ struct {
 	repo domain.BookRepository
 }
 
-func (bs bookServ) List(ctx context.Context, params domain.ListBookParams) (*domain.Pagination[domain.Book], error) {
+// ListByID implements domain.BookService.
+func (bs *bookServ) ListByID(ctx context.Context, params domain.ListBookParams) (*domain.PaginationCursor[domain.Book], error) {
+	findParams := domain.FindBookParams{
+		Offset: params.Page,
+		Limit:  params.PerPage,
+	}
 
+	books, err := bs.repo.FindBookByID(ctx, findParams)
+	if err != nil {
+		return nil, err
+	}
+
+	var nextCursor int
+	perPage := params.PerPage
+	size := len(books)
+	if size > params.PerPage {
+		nextCursor = int(books[size-1].ID)
+	} else {
+		perPage = size
+	}
+
+	pagination := domain.NewPaginationCursor[domain.Book](nextCursor)
+
+	pagination.Items = append(pagination.Items, books[:perPage]...)
+
+	return pagination, nil
+}
+
+func (bs bookServ) List(ctx context.Context, params domain.ListBookParams) (*domain.PaginationOffset[domain.Book], error) {
 	count, err := bs.repo.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	pagination := domain.NewPagination[domain.Book](
+	pagination := domain.NewPaginationOffset[domain.Book](
 		params.Page,
 		params.PerPage,
 		count,
