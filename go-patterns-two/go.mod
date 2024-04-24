@@ -1,3 +1,3 @@
 module go-patterns-two
 
-go 1.20
+go 1.22
