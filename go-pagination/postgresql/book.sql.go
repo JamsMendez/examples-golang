@@ -7,6 +7,7 @@ package psql
 
 import (
 	"context"
+	"time"
 )
 
 const countBooks = `-- name: CountBooks :one
@@ -51,7 +52,7 @@ func (q *Queries) FindBooksByID(ctx context.Context, arg FindBooksByIDParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	items := []Book{}
 	for rows.Next() {
 		var i Book
 		if err := rows.Scan(
@@ -102,7 +103,7 @@ func (q *Queries) FindBooksByOffset(ctx context.Context, arg FindBooksByOffsetPa
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	items := []Book{}
 	for rows.Next() {
 		var i Book
 		if err := rows.Scan(
@@ -146,7 +147,7 @@ func (q *Queries) FindLastBooks(ctx context.Context, limit int32) ([]Book, error
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	items := []Book{}
 	for rows.Next() {
 		var i Book
 		if err := rows.Scan(
@@ -167,4 +168,38 @@ func (q *Queries) FindLastBooks(ctx context.Context, limit int32) ([]Book, error
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertBook = `-- name: InsertBook :one
+INSERT INTO
+	books (title, author, created_at, updated_at)
+VALUES
+	($1, $2, $3, $4)
+RETURNING
+	id, title, author, created_at, updated_at
+`
+
+type InsertBookParams struct {
+	Title     string
+	Author    string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) (Book, error) {
+	row := q.db.QueryRowContext(ctx, insertBook,
+		arg.Title,
+		arg.Author,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Author,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

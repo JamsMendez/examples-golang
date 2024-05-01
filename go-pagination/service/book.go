@@ -2,12 +2,40 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"go-pagination/domain"
 )
 
 type bookServ struct {
 	repo domain.BookRepository
+}
+
+// Create implements domain.BookService.
+func (bs *bookServ) Create(ctx context.Context, params domain.CreateBookParams) (*domain.Book, error) {
+	now := time.Now().UTC()
+
+	insertParams := domain.InsertBookParams{
+		Title:     params.Title,
+		Author:    params.Author,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	b, err := bs.repo.InsertBook(ctx, insertParams)
+	if err != nil {
+		return nil, err
+	}
+
+	book := &domain.Book{
+		ID:        b.ID,
+		Title:     b.Title,
+		Author:    b.Author,
+		CreatedAt: b.CreatedAt,
+		UpdatedAt: b.UpdatedAt,
+	}
+
+	return book, nil
 }
 
 // ListByID implements domain.BookService.

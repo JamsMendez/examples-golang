@@ -11,7 +11,7 @@ import (
 func NewSchema(bookServ domain.BookService) (graphql.Schema, error) {
 	config := graphql.SchemaConfig{
 		Query:    query.NewRootQuery(bookServ),
-		Mutation: mutation.NewRootMutation(),
+		Mutation: mutation.NewRootMutation(bookServ),
 	}
 
 	return graphql.NewSchema(config)

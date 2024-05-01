@@ -22,3 +22,13 @@ var BookType = graphql.NewObject(
 		},
 	},
 )
+
+var InputBookType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: KeyInputBookType,
+		Fields: graphql.InputObjectConfigFieldMap{
+			KeyTitle:  &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.String)},
+			KeyAuthor: &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.String)},
+		},
+	},
+)

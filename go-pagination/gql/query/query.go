@@ -13,7 +13,7 @@ func NewRootQuery(bookServ domain.BookService) *graphql.Object {
 
 	config := graphql.ObjectConfig{
 		Name: "RootQuery",
-		Fields: graphql.Fields {
+		Fields: graphql.Fields{
 			schema.KeyQueryBooks: QueryBooks(resolveBook.FindBooks),
 		},
 	}

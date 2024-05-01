@@ -18,10 +18,18 @@ type FindBookParams struct {
 	Limit  int
 }
 
+type InsertBookParams struct {
+	Title     string
+	Author    string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type BookRepository interface {
 	Count(ctx context.Context) (int, error)
 	FindBook(ctx context.Context, params FindBookParams) ([]Book, error)
 	FindBookByID(ctx context.Context, params FindBookParams) ([]Book, error)
+	InsertBook(ctx context.Context, params InsertBookParams) (*Book, error)
 }
 
 type ListBookParams struct {
@@ -29,7 +37,13 @@ type ListBookParams struct {
 	PerPage int
 }
 
+type CreateBookParams struct {
+	Title  string
+	Author string
+}
+
 type BookService interface {
 	List(ctx context.Context, params ListBookParams) (*PaginationOffset[Book], error)
 	ListByID(ctx context.Context, params ListBookParams) (*PaginationCursor[Book], error)
+	Create(ctx context.Context, params CreateBookParams) (*Book, error)
 }

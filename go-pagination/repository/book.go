@@ -13,6 +13,31 @@ type bookRepo struct {
 	queries *psql.Queries
 }
 
+// InsertBook implements domain.BookRepository.
+func (br *bookRepo) InsertBook(ctx context.Context, params domain.InsertBookParams) (*domain.Book, error) {
+	insertParams := psql.InsertBookParams{
+		Title:     params.Title,
+		Author:    params.Author,
+		CreatedAt: params.CreatedAt,
+		UpdatedAt: params.UpdatedAt,
+	}
+
+	b, err := br.queries.InsertBook(ctx, insertParams)
+	if err != nil {
+		return nil, err
+	}
+
+	book := &domain.Book{
+		ID:        b.ID,
+		Title:     b.Title,
+		Author:    b.Author,
+		CreatedAt: b.CreatedAt,
+		UpdatedAt: b.UpdatedAt,
+	}
+
+	return book, nil
+}
+
 // FindBookByID implements domain.BookRepository.
 func (br *bookRepo) FindBookByID(ctx context.Context, params domain.FindBookParams) ([]domain.Book, error) {
 	var bb []psql.Book

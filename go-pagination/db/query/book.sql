@@ -1,3 +1,12 @@
+-- name: InsertBook :one
+INSERT INTO
+	books (title, author, created_at, updated_at)
+VALUES
+	($1, $2, $3, $4)
+RETURNING
+	*
+;
+
 -- name: FindBooksByOffset :many
 SELECT
 	id,
@@ -47,7 +56,7 @@ SELECT
 FROM
 	books
 WHERE
-	id <= $1 and updated_at <=
+	id <= $1
 ORDER BY
 	id DESC
 LIMIT
