@@ -17,7 +17,8 @@ func (br *bookResolve) FindBooks(params graphql.ResolveParams) (any, error) {
 		page = vPage.(int)
 	}
 
-	vPerPage, ok := params.Args[schema.KeyPerPage]
+	var vPerPage any
+	vPerPage, ok = params.Args[schema.KeyPerPage]
 	if ok {
 		perPage = vPerPage.(int)
 	}

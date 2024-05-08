@@ -61,7 +61,7 @@ func newDB() (*sql.DB, []func()) {
 	var cleanup []func()
 
 	purgeContainer := func() {
-		if err := container.Terminate(ctx); err != nil {
+		if err = container.Terminate(ctx); err != nil {
 			log.Fatalf("failed to terminate container: %s", err)
 		}
 
