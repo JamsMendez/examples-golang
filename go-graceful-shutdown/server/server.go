@@ -12,8 +12,8 @@ import (
 )
 
 type Server struct {
-	server     *http.Server
-	shutdown   chan struct{}
+	server    *http.Server
+	shutdown  chan struct{}
 	requestWg sync.WaitGroup
 }
 
@@ -25,7 +25,7 @@ func Run() {
 	srv := &Server{
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", serverPort),
-			Handler: mux, 
+			Handler: mux,
 		},
 		shutdown: make(chan struct{}),
 	}
