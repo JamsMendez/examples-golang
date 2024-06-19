@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,8 +13,8 @@ import (
 )
 
 type Server struct {
-	server     *http.Server
-	shutdown   chan struct{}
+	server    *http.Server
+	shutdown  chan struct{}
 	requestWg sync.WaitGroup
 }
 
@@ -25,7 +26,7 @@ func Run() {
 	srv := &Server{
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", serverPort),
-			Handler: mux, 
+			Handler: mux,
 		},
 		shutdown: make(chan struct{}),
 	}
@@ -37,7 +38,7 @@ func Run() {
 
 	go func() {
 		fmt.Printf("Starting server on :%d\n", serverPort)
-		if err := srv.server.ListenAndServe(); err != http.ErrServerClosed {
+		if err := srv.server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("ListenAndServe(): %v\n", err)
 		}
 	}()
@@ -68,6 +69,6 @@ func (srv *Server) handler(w http.ResponseWriter, r *http.Request) {
 		defer srv.requestWg.Done()
 
 		time.Sleep(2 * time.Second)
-		fmt.Fprintln(w, "Hello, World!")
+		_, _ = fmt.Fprintln(w, "Hello, World!")
 	}
 }

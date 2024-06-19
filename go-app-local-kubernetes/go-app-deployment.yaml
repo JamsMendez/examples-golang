@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f compose.yaml convert
+    kompose.version: 1.34.0 (HEAD)
+  labels:
+    io.kompose.service: go-app
+  name: go-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      io.kompose.service: go-app
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f compose.yaml convert
+        kompose.version: 1.34.0 (HEAD)
+      labels:
+        io.kompose.service: go-app
+    spec:
+      containers:
+        - image: docker.io/library/go-app-local-kube:1.0.0
+          name: go-app
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      restartPolicy: Always

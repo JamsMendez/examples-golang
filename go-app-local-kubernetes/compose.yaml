@@ -1,0 +1,5 @@
+services:
+  go-app:
+    image: go-app-local-kube:1.0.0
+    ports:
+      - 3000:3000
