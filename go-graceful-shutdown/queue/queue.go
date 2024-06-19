@@ -38,7 +38,7 @@ func Run() {
 			default:
 				messageQueue <- fmt.Sprintf("Message %d", j)
 
-				time.Sleep(time.Millisecond * 500)
+				<-time.After(time.Millisecond * 500)
 
 				j = j + 1
 			}
