@@ -1,5 +1,5 @@
-module rate-limit-http-request
+module go-rate-limit
 
-go 1.19
+go 1.22
 
-require golang.org/x/time v0.2.0
+require golang.org/x/time v0.5.0

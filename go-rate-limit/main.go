@@ -12,10 +12,14 @@ import (
 
 	"golang.org/x/time/rate"
 
-	rateLimiter "rate-limit-http-request/rate-limiter"
+	rateLimiter "go-rate-limit/http-request"
 )
 
 func main() {
+	runTickRateLimit()
+}
+
+func runMain() {
 	// runRateLimitWaitMultiple()
 
 	limiter := rate.NewLimiter(rate.Every(5*time.Second), 5)
@@ -76,6 +80,36 @@ func runSimpleRateLimit() {
 		<-burstLimiter
 		fmt.Println("Request 2:", req, time.Now())
 	}
+}
+
+func runTickRateLimit() {
+	doWork := func(taskID int, limiter <-chan time.Time) {
+		<-limiter
+		// Perform task operations
+		fmt.Println("TaskID: ", taskID)
+	}
+
+	tasks := make(chan int, 10)
+	for i := 0; i < 10; i++ {
+		tasks <- i
+	}
+	fmt.Println("Set tasks ...")
+
+	limiter := time.Tick(time.Second * 2)
+
+	fmt.Println("Get tasks ...")
+
+	for taskID := range tasks {
+		go doWork(taskID, limiter)
+		fmt.Println(taskID, len(tasks), cap(tasks))
+		if len(tasks) == 0 {
+			close(tasks)
+		}
+	}
+
+	fmt.Println("Wait ... ")
+	<-time.After(25 * time.Second)
+	fmt.Println("Finish...")
 }
 
 // rate limiter in server http and client http
