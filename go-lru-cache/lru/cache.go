@@ -57,7 +57,6 @@ func (c *Cache) Set(key string, value any) {
 
 func (c *Cache) Get(key string) (any, bool) {
 	c.rwLock.RLock()
-	defer c.rwLock.RUnlock()
 
 	if ele, ok := c.cache[key]; ok {
 		item := ele.Value.(*CacheItem)
@@ -72,9 +71,11 @@ func (c *Cache) Get(key string) (any, bool) {
 		}
 
 		c.eviction.MoveToFront(ele)
+		c.rwLock.RUnlock()
 		return item.value, true
 	}
 
+	c.rwLock.RUnlock()
 	return nil, false
 }
 
