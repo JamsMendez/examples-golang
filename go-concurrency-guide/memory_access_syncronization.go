@@ -32,7 +32,7 @@ func (c *Counter) Increment() {
 
 // WaitGroup
 // Call to add a group of goroutines
-func mainWaitGroup() {
+func runWaitGroup() {
 	var wg sync.WaitGroup
 
 	for _, salutation := range []string{"hello", "greeting", "good day"} {
@@ -49,69 +49,71 @@ func mainWaitGroup() {
 
 // RWMutex
 // More fine-grained memory control, being possible to request read-only lock
-func mainRWMutex() {
+func runRWMutex(debug bool) {
 	producer := func(key string, wg *sync.WaitGroup, l sync.Locker) {
 		defer wg.Done()
 
-		for i := 3; i > 0; i-- {
-			fmt.Println("Producer.PreLock.i: ", key, i)
+		for i := 5; i > 0; i-- {
+			// logln(debug, "Producer.PreLock.i: ", key, i)
 			l.Lock()
-			fmt.Println("Producer.PostLock.i: ", key, i)
+			logln(debug, "Producer: ", i, key)
+
 			l.Unlock()
-			fmt.Println("Producer.PostUnlock.i: ", key, i)
-			time.Sleep(1)
-			fmt.Println("Producer.PostUnlock.Finish.Iteration: ", key, i)
+			// logln(debug, "Producer.PostUnlock.i: ", key, i)
+			time.Sleep(1 * time.Nanosecond)
+			// logln(debug, "Producer.PostUnlock.Finish.Iteration: ", key, i)
 		}
 	}
 
-	observer := func(key string, wg *sync.WaitGroup, l sync.Locker) {
+	observer := func(ID int, key string, wg *sync.WaitGroup, l sync.Locker) {
 		defer wg.Done()
-		fmt.Println("Observer.PreLock", key)
+		// logln(debug, "Observer.PreLock", ID, key)
 		l.Lock()
-		fmt.Println("Observer.PostLock", key)
 		defer l.Unlock()
+
+		logln(debug, "Observer: ", ID, key)
 	}
 
 	test := func(key string, count int, mutex, rwMutex sync.Locker) time.Duration {
 		var wg sync.WaitGroup
 
+		// count = 1
 		nCount := count + 1
+		// nCount = 2
 
-		fmt.Println("test.nCount: ", key, nCount)
+		// logln(debug, "test.nCount: ", key, nCount)
 
 		wg.Add(nCount)
 
 		beginTestTime := time.Now()
 
-		fmt.Println("test.Pre.Producer", key)
-		go producer(key, &wg, mutex)
-		fmt.Println("test.Post.Producer", key)
+		// logln(debug, "test.Pre.Producer", key)
+		go producer(key, &wg, mutex) // nCount = 2 - 1 = 1
+		// logln(debug, "test.Post.Producer", key)
 
 		for i := count; i > 0; i-- {
-			fmt.Println("test.Pre.Observer: ", key, i)
-			go observer(key, &wg, rwMutex)
-			fmt.Println("test.Post.Observer: ", key, i)
+			go observer(i, key, &wg, rwMutex)
 		}
 
-		fmt.Println("test.PreWait: ", key, nCount)
+		// logln(debug, "test.PreWait: ", key, nCount)
 
 		wg.Wait()
 
-		fmt.Println("test.PostWait: ", key, nCount)
+		// logln(debug, "test.PostWait: ", key, nCount)
 
 		return time.Since(beginTestTime)
 	}
 
-	tw := tabwriter.NewWriter(os.Stdout, 0, 1, 2, ' ', 0)
+	tw := tabwriter.NewWriter(os.Stdout, 0, 4, 4, ' ', 0)
 	defer tw.Flush()
 
 	var m sync.RWMutex
 	fmt.Fprintf(tw, "Readers\tRWMutex\tMutex\n")
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 20; i++ {
 		count := int(math.Pow(2, float64(i)))
 
-		fmt.Println("MainRWMuter: ", count)
+		logln(debug, "MainRWMuter: ", count)
 
 		fmt.Fprintf(
 			tw,
@@ -120,7 +122,5 @@ func mainRWMutex() {
 			test("A", count, &m, m.RLocker()),
 			test("B", count, &m, &m),
 		)
-
-		fmt.Println("MainRWMuter.Finish.Iteration: ", count)
 	}
 }
