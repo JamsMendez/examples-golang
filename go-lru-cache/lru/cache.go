@@ -17,21 +17,25 @@ type Cache struct {
 	ttl      time.Duration
 	cache    map[string]*list.Element
 	eviction *list.List
-	rwLock   sync.RWMutex
+	// locker   sync.RWMutex
+	mutex   sync.Locker
+	rwMutex sync.Locker
 }
 
-func NewCache(maxSize int, ttl time.Duration) *Cache {
+func NewCache(maxSize int, ttl time.Duration, mutex, rwMutex sync.Locker) *Cache {
 	return &Cache{
 		maxSize:  maxSize,
 		ttl:      ttl,
 		cache:    make(map[string]*list.Element),
 		eviction: list.New(),
+		mutex:    mutex,
+		rwMutex:  rwMutex,
 	}
 }
 
 func (c *Cache) Set(key string, value any) {
-	c.rwLock.Lock()
-	defer c.rwLock.Unlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
 	if ele, ok := c.cache[key]; ok {
 		c.eviction.MoveToFront(ele)
@@ -55,7 +59,7 @@ func (c *Cache) Set(key string, value any) {
 	c.cache[key] = ele
 }
 
-func (c *Cache) Get(key string) (any, bool) {
+/* func (c *Cache) Get(key string) (any, bool) {
 	c.rwLock.RLock()
 
 	if ele, ok := c.cache[key]; ok {
@@ -77,11 +81,35 @@ func (c *Cache) Get(key string) (any, bool) {
 
 	c.rwLock.RUnlock()
 	return nil, false
+} */
+
+func (c *Cache) Get(key string) (any, bool) {
+	c.rwMutex.Lock()
+
+	if ele, ok := c.cache[key]; ok {
+		item := ele.Value.(*CacheItem)
+		if time.Since(item.timestamp) > c.ttl {
+			c.rwMutex.Unlock() // important unlock reading
+
+			c.mutex.Lock()
+			c.eviction.Remove(ele)
+			delete(c.cache, key)
+			c.mutex.Unlock()
+			return nil, false
+		}
+
+		c.eviction.MoveToFront(ele)
+		c.rwMutex.Unlock()
+		return item.value, true
+	}
+
+	c.rwMutex.Unlock()
+	return nil, false
 }
 
 func (c *Cache) Delete(key string) {
-	c.rwLock.Lock()
-	defer c.rwLock.Unlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
 	if ele, ok := c.cache[key]; ok {
 		c.eviction.Remove(ele)

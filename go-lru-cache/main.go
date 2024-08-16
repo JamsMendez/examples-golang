@@ -2,35 +2,74 @@ package main
 
 import (
 	"fmt"
-	"go-lru-cache/lru"
+	"math"
+	"os"
+	"sync"
+	"text/tabwriter"
 	"time"
+
+	"go-lru-cache/lru"
 )
 
 func main() {
-    // LRU Cache
-    // Least Recently Used
-    // Cuando se necesite un nuevo elemento
-    // se eliminada el menos usando recientemente. 
-    // Mutex vs RWMutex
+	// LRU Cache
+	// Least Recently Used
+	// Cuando se necesite un nuevo elemento
+	// se eliminada el menos usando recientemente.
+	// Mutex vs RWMutex
 
-    cache := lru.NewCache(3, 3 * time.Second)
-    cache.Set("users", "list users")
-    fmt.Println(cache.Get("users"))
+	var rwMutex sync.RWMutex
 
-    <-time.After(4 * time.Second)
+	cache := lru.NewCache(10, 3*time.Second, &rwMutex, rwMutex.RLocker())
 
-    fmt.Println(cache.Get("users"))
+	tw := tabwriter.NewWriter(os.Stdout, 0, 4, 4, ' ', 0)
+	defer tw.Flush()
 
+	fmt.Fprintf(tw, "Readers\tRWMutex\tMutex\n")
 
-    cache.Set("users 1", "list users")
-    <-time.After(time.Second)
-    cache.Set("users 2", "list users")
-    <-time.After(time.Second)
-    cache.Set("users 3", "list users")
-    <-time.After(time.Second)
-    cache.Set("users 4", "list users")
-    <-time.After(time.Second)
+	for i := 0; i < 20; i++ {
+		count := int(math.Pow(2, float64(i)))
 
-    fmt.Println(cache.Get("users 1"))
-    fmt.Println(cache.Get("users 2"))
+		fmt.Fprintf(
+			tw,
+			"%d\t%v\t%v\n",
+			count,
+			test(count, cache, &rwMutex, rwMutex.RLocker()), // RLocker return a rwMutex with RLock and RUnlock
+			test(count, cache, &rwMutex, &rwMutex),
+		)
+	}
+}
+
+func producer(cache *lru.Cache, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for i := 5; i > 0; i-- {
+		cache.Set("users", fmt.Sprintf("user list %d", i))
+		time.Sleep(1 * time.Nanosecond)
+	}
+}
+
+func observer(cache *lru.Cache, wg *sync.WaitGroup) {
+	defer wg.Done()
+	_, _ = cache.Get("users")
+}
+
+func test(count int, cache *lru.Cache, mutex, rwMutex sync.Locker) time.Duration {
+	var wg sync.WaitGroup
+
+	nCount := count + 1
+
+	wg.Add(nCount)
+
+	beginTime := time.Now()
+
+	go producer(cache, &wg) // nCount = 2 - 1 = 1
+
+	for i := count; i > 0; i-- {
+		go observer(cache, &wg)
+	}
+
+	wg.Wait()
+
+	return time.Since(beginTime)
 }

@@ -107,7 +107,7 @@ func runRWMutex(debug bool) {
 	tw := tabwriter.NewWriter(os.Stdout, 0, 4, 4, ' ', 0)
 	defer tw.Flush()
 
-	var m sync.RWMutex
+	var rw sync.RWMutex
 	fmt.Fprintf(tw, "Readers\tRWMutex\tMutex\n")
 
 	for i := 0; i < 20; i++ {
@@ -119,8 +119,8 @@ func runRWMutex(debug bool) {
 			tw,
 			"%d\t%v\t%v\n",
 			count,
-			test("A", count, &m, m.RLocker()),
-			test("B", count, &m, &m),
+			test("A", count, &rw, rw.RLocker()), // RLocker return a rwMutex with RLock and RUnlock
+			test("B", count, &rw, &rw),
 		)
 	}
 }
