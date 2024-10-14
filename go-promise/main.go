@@ -20,10 +20,8 @@ func NewPromise(fn func() (any, error)) *Promise {
 		result, err := fn()
 		if err != nil {
 			p.err <- err
-			close(p.result)
 		} else {
 			p.result <- result
-			close(p.err)
 		}
 	}()
 
@@ -34,11 +32,12 @@ func (p *Promise) Then(resolve func(any), reject func(error), finally func()) {
 	select {
 	case result := <-p.result:
 		resolve(result)
-	case <-p.err:
-		if reject != nil {
-			reject(nil)
-		}
+	case err := <-p.err:
+		reject(err)
 	}
+	close(p.result)
+	close(p.err)
+
 	finally()
 }
 
@@ -52,14 +51,15 @@ func main() {
 
 	done := make(chan struct{})
 
-	promise.Then(
+	go promise.Then(
 		func(value any) {
-			fmt.Println("Response: ", value)
+			fmt.Println("Success: ", value)
 		},
 		func(err error) {
 			fmt.Println("Error: ", err)
 		},
 		func() {
+			fmt.Println("Finish")
 			close(done)
 		},
 	)
