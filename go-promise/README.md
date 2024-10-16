@@ -6,16 +6,14 @@ coordinacion de tareas que deben realizarse en paralelo
 y cuyos resultados se necesitan en algun momento futuro.
 
 ### Caracteristicas
-Encadenamiento: Ejecuta secuencialmente una serie de tareas
-                asincronas de manera legible.
+Encadenamiento:    Ejecuta secuencialmente una serie de tareas
+                   asincronas de manera legible.
 
 Manejo de errores: Centraliza el manejo de errores para una secuencia
                    de operaciones asincronas.
 
-Sincronizacion: Gestiona multiples operaciones asincronas y maneja
-                sus resultados de manera eficiente.
+Sincronizacion:    Gestiona multiples operaciones asincronas y maneja
+                   sus resultados de manera eficiente.
 
-Desacoplamiento: Sepera la logica que obtiene el valor de la logica
-                 que lo consume.
-
-
+Desacoplamiento:   Sepera la logica que obtiene el valor de la logica
+                   que lo consume.
