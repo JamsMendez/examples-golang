@@ -1,13 +1,13 @@
 ### Patron de Concurrencia Publish-Subscribe (Pub/Sub) 
 
-Permite la comunicacion de mensajes que desacopla el 
+Permite la comunicacion de mensajes desacoplando el 
 envio y recepcion de mensajes entre multiples partes.
 
 #### Publisher
 Envian mensajes a un canal comun llamado
 Topic y Subject, mientras ..
 
-#### Subscribers
+#### Subscriber
 Se suscriben a esos Topics para reciber
 los mensajes que les interesan.
 
