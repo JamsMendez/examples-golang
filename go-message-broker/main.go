@@ -51,8 +51,53 @@ func notifyMsg(name string, messages <-chan string) {
 	}
 }
 
+type Broker struct {
+	topics map[string]*Topic
+	rwLock sync.RWMutex
+}
+
+func NewBroker() *Broker {
+	return &Broker{
+		topics: make(map[string]*Topic),
+	}
+}
+
+func (b *Broker) CreateTopic(name string) {
+	b.rwLock.Lock()
+	defer b.rwLock.Unlock()
+	if _, exists := b.topics[name]; !exists {
+		b.topics[name] = NewTopic(name)
+	}
+}
+
+func (b *Broker) Topic(name string) (*Topic, bool) {
+	b.rwLock.RLock()
+	defer b.rwLock.RUnlock()
+	t, exists := b.topics[name];
+	return t, exists
+}
+
+func (b *Broker) PublishMsg(name, msg string) error {
+	b.rwLock.RLock()
+	defer b.rwLock.RUnlock()
+	t, exists := b.topics[name];
+	if !exists {
+		return fmt.Errorf("topic %s not found", name)
+	}
+
+	t.Publish(msg)
+	return nil
+}
+
 func main() {
-	t := NewTopic("messages")
+	name := "messages"
+	broker := NewBroker()
+	broker.CreateTopic(name)
+
+	t, ok := broker.Topic(name)
+	if !ok {
+		return
+	}
 
 	jams := t.Subscribe()
 	gopher := t.Subscribe()
@@ -63,7 +108,10 @@ func main() {
 	for i := 0; i < 5; i++ {
 		ID := i + 1
 		msg := fmt.Sprintf("Message %d\n", ID)
-		t.Publish(msg)
+		err := broker.PublishMsg(name, msg)
+		if err != nil {
+			fmt.Println(err)
+		}
 		<-time.After(1 * time.Second)
 	}
 }
