@@ -21,7 +21,7 @@ func NewClientKeycloak() *ClientKeycloak {
 		kc: gocloak.NewClient("http://localhost:8080"),
 
 		clientID:     "library-openid-auth",
-		clientSecret: "ptTJzX9FPuCsMvBWMpZoLLoD6m02Vw8O",
+		clientSecret: "client-secret-shh!",
 		realm:        "go-services-realm",
 
 		userAdmin:  "admin",
